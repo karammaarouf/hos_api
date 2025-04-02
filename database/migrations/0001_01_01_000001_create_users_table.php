@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->string('role')->default('patient');
-            $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();  // Add this line
+            // Modified relationship
+            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
             $table->rememberToken();
             $table->timestamps();
         });

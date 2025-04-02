@@ -7,6 +7,8 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\InvoiceController;
 
 Route::get('/test', function() {
     return response()->json([
@@ -34,5 +36,6 @@ Route::post('/login', [UserController::class, 'login'])
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 Route::apiResource('doctors', DoctorController::class);
 Route::apiResource('patients', PatientController::class);
-
+Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('appointments', AppointmentController::class);
+Route::apiResource('invoices', InvoiceController::class);

@@ -22,9 +22,6 @@ class User extends Authenticatable
     ];
 
     protected $hidden = [
-        'created_at',
-        'updated_at',
-        
         'password',
         'remember_token',
     ];
@@ -32,13 +29,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s'
     ];
 
-    public function appointments(){
-        return $this->hasMany(Appointment::class);
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'patient_id');
     }
-    public function invoices(){
-        return $this->hasMany(Invoice::class);
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class, 'patient_id');
     }
     public function department()
 {
