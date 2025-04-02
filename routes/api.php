@@ -21,7 +21,7 @@ Route::get('/test', function() {
 Route::get('/users/test', [UserController::class, 'test']);
 
 
-
+///////////////////////////////////////////////////////////////////
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -32,6 +32,10 @@ Route::post('/register', [UserController::class,'register'])
 Route::post('/login', [UserController::class, 'login'])
     ->middleware('guest')
     ->name('login');
+    
+    Route::post('/logout', [UserController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 Route::apiResource('doctors', DoctorController::class);
