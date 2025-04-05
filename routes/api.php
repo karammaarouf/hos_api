@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PharmacyController;
 
 Route::get('/test', function() {
     return response()->json([
@@ -43,3 +44,4 @@ Route::apiResource('patients', PatientController::class);
 Route::apiResource('departments', DepartmentController::class);
 Route::apiResource('appointments', AppointmentController::class);
 Route::apiResource('invoices', InvoiceController::class);
+Route::apiResource('pharmacy', PharmacyController::class);

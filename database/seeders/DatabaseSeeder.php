@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             AppointmentSeeder::class,
             InvoiceSeeder::class,
+            PharmacySeeder::class,
         ]);
     }
 }
