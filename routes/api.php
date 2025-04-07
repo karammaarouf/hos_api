@@ -19,29 +19,36 @@ Route::get('/test', function() {
         'timestamp' => now()
     ]);
 });
-Route::get('/users/test', [UserController::class, 'test']);
 
+//راوتات التسجيل
+Route::post('/register', [UserController::class,'register'])->middleware('guest');
+Route::post('/login', [UserController::class, 'login'])->middleware('guest');   
+Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
+Route::put('/users/{user}', [UserController::class, 'update'])->middleware('auth:sanctum');
 
-///////////////////////////////////////////////////////////////////
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+// Add this new route for profile image upload
+Route::post('/profile-image/upload', [UserController::class, 'uploadProfileImage'])->middleware('auth:sanctum');
+
+// لعرض صورة المستخدم
+Route::get('/profile-image/{filename}', function ($filename) {
+    $path = storage_path('app/public/profiles/' . $filename);
+    
+    if (!file_exists($path)) {
+        return response()->json(['message' => 'Image not found'], 404);
+    }
+
+    return response()->file($path);
 });
 
-Route::post('/register', [UserController::class,'register'])
-    ->middleware('guest')
-    ->name('register');
-Route::post('/login', [UserController::class, 'login'])
-    ->middleware('guest')
-    ->name('login');
-    
-    Route::post('/logout', [UserController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout');
-
-Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
+//راوتات ادارة الاطباء
 Route::apiResource('doctors', DoctorController::class);
+//راوتات ادارة المرضى
 Route::apiResource('patients', PatientController::class);
+//راوترات ادارة الاقسام
 Route::apiResource('departments', DepartmentController::class);
+//راوتات ادارة المواعيد
 Route::apiResource('appointments', AppointmentController::class);
+//راوتات ادارة الفواتير او الصرفات
 Route::apiResource('invoices', InvoiceController::class);
+//راوتات ادارة الصيدلية
 Route::apiResource('pharmacy', PharmacyController::class);

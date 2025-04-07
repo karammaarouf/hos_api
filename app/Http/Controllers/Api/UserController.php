@@ -104,4 +104,89 @@ class UserController extends Controller
             ]
         ]);
     }
+    public function update(Request $request)
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'string|max:255',
+            'email' => 'email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $updateData = $request->only(['name', 'email', 'phone', 'address']);
+        
+        if ($request->hasFile('profile_image')) {
+            // Delete old image if exists
+            if ($user->profile_image && file_exists(storage_path('app/public/' . $user->profile_image))) {
+                unlink(storage_path('app/public/' . $user->profile_image));
+            }
+            
+            $imageName = time() . '_' . $user->id . '.' . $request->profile_image->extension();
+            $request->profile_image->storeAs('public/profiles', $imageName);
+            $updateData['profile_image'] = 'profiles/' . $imageName;
+        }
+
+        if ($request->has('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User updated successfully',
+            'data' => $user
+        ]);
+    }
+    public function uploadProfileImage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = $request->user();
+
+        if ($request->hasFile('profile_image')) {
+            // Delete old image if exists
+            if ($user->profile_image && file_exists(storage_path('app/public/' . $user->profile_image))) {
+                unlink(storage_path('app/public/' . $user->profile_image));
+            }
+            
+            $imageName = time() . '_' . $user->id . '.' . $request->profile_image->extension();
+            $request->profile_image->storeAs('public/profiles', $imageName);
+            
+            $user->update([
+                'profile_image' => 'profiles/' . $imageName
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile image updated successfully',
+            'data' => [
+                'user' => $user,
+                'image_url' => url('api/profile-image/' . $imageName)
+            ]
+        ]);
+    }
 }

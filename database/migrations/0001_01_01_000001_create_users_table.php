@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->string('role')->default('patient');
+            $table->string('profile_image')->nullable();
             // Modified relationship
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
             $table->rememberToken();
