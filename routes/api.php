@@ -11,27 +11,25 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PharmacyController;
 
-Route::get('/test', function() {
-    return response()->json([
-        'status' => true,
-        'message' => 'API is working correctly',
-        'version' => '1.0',
-        'timestamp' => now()
-    ]);
-});
 
 //راوتات التسجيل
 Route::post('/register', [UserController::class,'register'])->middleware('guest');
 Route::post('/login', [UserController::class, 'login'])->middleware('guest');   
 Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
-Route::put('/users/{user}', [UserController::class, 'update'])->middleware('auth:sanctum');
 
-// Add this new route for profile image upload
-Route::post('/profile-image/upload', [UserController::class, 'uploadProfileImage'])->middleware('auth:sanctum');
+//راوتات المستخدمين
+Route::prefix('users')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::put('/{user}', [UserController::class, 'update']);
+    Route::delete('/{user}', [UserController::class, 'destroy']);
+
+});
+
 
 // لعرض صورة المستخدم
 Route::get('/profile-image/{filename}', function ($filename) {
-    $path = storage_path('app/public/profiles/' . $filename);
+    $path = public_path('profiles/' . $filename);
     
     if (!file_exists($path)) {
         return response()->json(['message' => 'Image not found'], 404);

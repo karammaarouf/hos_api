@@ -91,102 +91,100 @@ class UserController extends Controller
         ]);
     }
     
-    public function test()
-    {
-        $users = User::with('department')->get();
-        
-        return response()->json([
-            'status' => true,
-            'message' => 'Users retrieved successfully',
-            'data' => [
-                'users' => $users,
-                'total' => $users->count()
-            ]
-        ]);
-    }
     public function update(Request $request)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
+            
+            $validator = Validator::make($request->all(), [
+                'name' => 'nullable|string|max:255',
+                'email' => 'nullable|email|unique:users,email,' . $user->id,
+                'password' => 'nullable|string|min:8',
+                'phone' => 'nullable|string',
+                'address' => 'nullable|string',
+                'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            ]);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'string|max:255',
-            'email' => 'email|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
+            $updateData = array_filter($request->only([
+                'name', 'email', 'phone', 'address'
+            ]));
+            
+            if ($request->hasFile('profile_image')) {
+                $file = $request->file('profile_image');
+                
+                // Generate new image name with timestamp
+                $imageName = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+                
+                // Store only in public directory
+                $file->move(public_path('profiles'), $imageName);
+                
+                $updateData['profile_image'] = $imageName;
+            }
 
-        $updateData = $request->only(['name', 'email', 'phone', 'address']);
-        
-        if ($request->hasFile('profile_image')) {
-            // Delete old image if exists
-            if ($user->profile_image && file_exists(storage_path('app/public/' . $user->profile_image))) {
-                unlink(storage_path('app/public/' . $user->profile_image));
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
             }
             
-            $imageName = time() . '_' . $user->id . '.' . $request->profile_image->extension();
-            $request->profile_image->storeAs('public/profiles', $imageName);
-            $updateData['profile_image'] = 'profiles/' . $imageName;
+            if ($user->update($updateData)) {
+            
+            return response()->json([
+                'status' => true,
+                'message' => 'User ' . $request->name . ' updated successfully',
+                'data' => [
+                    'user' => $user,
+                    'profile_image_url' => $user->profile_image ? url('api/profile-image/' . $user->profile_image) : null
+                ]
+            ]);}
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Update failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        if ($request->has('password')) {
-            $updateData['password'] = Hash::make($request->password);
-        }
-
-        $user->update($updateData);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'User updated successfully',
-            'data' => $user
-        ]);
     }
-    public function uploadProfileImage(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg|max:2048'
-        ]);
-
-        if ($validator->fails()) {
+    public function index()
+        {
+            $users = User::with('department')->get();
+            
             return response()->json([
-                'status' => false,
-                'message' => 'Validation Error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $user = $request->user();
-
-        if ($request->hasFile('profile_image')) {
-            // Delete old image if exists
-            if ($user->profile_image && file_exists(storage_path('app/public/' . $user->profile_image))) {
-                unlink(storage_path('app/public/' . $user->profile_image));
-            }
-            
-            $imageName = time() . '_' . $user->id . '.' . $request->profile_image->extension();
-            $request->profile_image->storeAs('public/profiles', $imageName);
-            
-            $user->update([
-                'profile_image' => 'profiles/' . $imageName
+                'status' => true,
+                'message' => 'Users retrieved successfully',
+                'data' => [
+                    'users' => $users,
+                    'total' => $users->count()
+                ]
             ]);
         }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Profile image updated successfully',
-            'data' => [
-                'user' => $user,
-                'image_url' => url('api/profile-image/' . $imageName)
-            ]
-        ]);
+        public function show($id)
+        {
+            try {
+                $user = User::with('department')->findOrFail($id);
+                
+                return response()->json([
+                    'status' => true,
+                    'message' => 'User retrieved successfully',
+                    'data' => [
+                        'user' => $user,
+                        'profile_image_url' => $user->profile_image ? url('storage/' . $user->profile_image) : null
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found',
+                    'error' => $e->getMessage()
+                ], 404);
+            }
+        }
     }
-}
