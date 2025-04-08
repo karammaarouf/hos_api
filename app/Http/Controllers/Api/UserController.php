@@ -31,6 +31,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'profile_image' => 'patient.png'  // Default profile image
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
