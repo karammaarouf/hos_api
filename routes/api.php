@@ -34,7 +34,6 @@ Route::get('/profile-image/{filename}', function ($filename) {
     if (!file_exists($path)) {
         return response()->json(['message' => 'Image not found'], 404);
     }
-
     return response()->file($path);
 });
 
