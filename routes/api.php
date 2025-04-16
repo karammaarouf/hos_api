@@ -10,6 +10,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PharmacyController;
+use App\Http\Controllers\MedicalRecordController;
 
 
 //راوتات التسجيل
@@ -49,3 +50,10 @@ Route::apiResource('appointments', AppointmentController::class);
 Route::apiResource('invoices', InvoiceController::class);
 //راوتات ادارة الصيدلية
 Route::apiResource('pharmacy', PharmacyController::class);
+
+
+// Medical Records Routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('medical-records', MedicalRecordController::class);
+    Route::get('/patients/{patientId}/medical-records', [MedicalRecordController::class, 'index']);
+});

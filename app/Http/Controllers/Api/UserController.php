@@ -100,8 +100,12 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'nullable|string|max:255',
                 'email' => 'nullable|email|unique:users,email,' . $user->id,
-                'password' => 'nullable|string|min:8',
+                'current_password' => 'required_with:new_password',
+                'new_password' => 'nullable|string|min:8|confirmed',
+                'new_password_confirmation' => 'required_with:new_password',
                 'phone' => 'nullable|string',
+                'birth_date' => 'nullable|date',
+                'gender' => 'nullable|in:male,female',
                 'address' => 'nullable|string',
                 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
             ]);
@@ -130,8 +134,15 @@ class UserController extends Controller
                 $updateData['profile_image'] = $imageName;
             }
 
-            if ($request->filled('password')) {
-                $updateData['password'] = Hash::make($request->password);
+            // Update password verification and setting
+            if ($request->filled('new_password')) {
+                if (!Hash::check($request->current_password, $user->password)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Current password is incorrect'
+                    ], 422);
+                }
+                $updateData['password'] = Hash::make($request->new_password);
             }
             
             if ($user->update($updateData)) {

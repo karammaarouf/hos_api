@@ -16,6 +16,8 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
+        'birth_date',
+        'gender',
         'address',
         'role',
         'profile_image',
@@ -47,4 +49,9 @@ class User extends Authenticatable
     return $this->belongsTo(Department::class);
 }
      
+    // Add this method inside the User class
+    public function medicalRecords()
+    {
+        return $this->hasMany(MedicalRecord::class, 'patient_id');
+    }
 }

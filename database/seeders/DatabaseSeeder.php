@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
         $this->call([
             DepartmentSeeder::class,
@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             AppointmentSeeder::class,
             InvoiceSeeder::class,
             PharmacySeeder::class,
+            MedicalRecordSeeder::class,
         ]);
     }
 }

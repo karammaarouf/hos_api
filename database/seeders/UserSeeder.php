@@ -3,73 +3,56 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Department;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
 
 class UserSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        // Ensure the profile images directory exists
-        $profilesPath = storage_path('app/public/profiles');
-        if (!File::exists($profilesPath)) {
-            File::makeDirectory($profilesPath, 0755, true);
+        // Create admin user
+        User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'birth_date' => '1990-01-01',
+            'gender' => 'male',
+            'phone' => '1234567890',
+            'address' => 'Admin Address',
+            'profile_image' => 'patient.png'
+        ]);
+
+        // Create doctors
+        for ($i = 1; $i <= 3; $i++) {
+            User::create([
+                'name' => "Doctor $i",
+                'email' => "doctor$i@example.com",
+                'password' => Hash::make('12345678'),
+                'role' => 'doctor',
+                'birth_date' => date('Y-m-d', strtotime("-" . (30 + $i) . " years")),
+                'gender' => $i % 2 == 0 ? 'male' : 'female',
+                'phone' => "555555555$i",
+                'address' => "Doctor Address $i",
+                'profile_image' => 'patient.png',
+                'department_id' => $i
+            ]);
         }
 
-        // Define doctor images array
-        $doctorImages = [];
-        for ($i = 1; $i <= 9; $i++) {
-            $doctorImages[] = 'doc' . $i . '.png';
-        }
-
-        // Copy doctor images to profiles directory
-        foreach ($doctorImages as $image) {
-            $sourcePath = public_path('profiles/' . $image);
-            $destinationPath = storage_path('app/public/profiles/' . $image);
-            if (File::exists($sourcePath)) {
-                File::copy($sourcePath, $destinationPath);
-            }
-        }
-
-        // Create 10 doctors with random images
-        for ($i = 0; $i < 10; $i++) {
-            $doctor = User::firstOrCreate(
-                ['email' => 'doctor' . ($i + 1) . '@hospital.com'],
-                [
-                    'name' => 'Dr. ' . fake()->name(),
-                    'password' => Hash::make('12345678'),
-                    'phone' => fake()->phoneNumber(),
-                    'address' => fake()->address(),
-                    'role' => 'doctor',
-                    'profile_image' => 'profiles/' . $doctorImages[array_rand($doctorImages)]
-                ]
-            );
-        }
-
-        // Create 20 patients with default image
-        for ($i = 0; $i < 20; $i++) {
-            $patient = User::firstOrCreate(
-                ['email' => 'patient' . ($i + 1) . '@example.com'],
-                [
-                    'name' => fake()->name(),
-                    'password' => Hash::make('12345678'),
-                    'phone' => fake()->phoneNumber(),
-                    'address' => fake()->address(),
-                    'role' => 'patient',
-                    'profile_image' => 'profiles/patient.png'
-                ]
-            );
-        }
-
-        // Assign departments to doctors
-        $doctors = User::where('role', 'doctor')->get();
-        $departments = Department::all();
+        // Create patients
+        $genders = ['male', 'female'];
         
-        foreach ($doctors as $doctor) {
-            $doctor->update([
-                'department_id' => $departments->random()->id
+        for ($i = 1; $i <= 5; $i++) {
+            User::create([
+                'name' => "Patient $i",
+                'email' => "patient$i@example.com",
+                'password' => Hash::make('12345678'),
+                'role' => 'patient',
+                'birth_date' => date('Y-m-d', strtotime("-" . (20 + $i) . " years")),
+                'gender' => $genders[array_rand($genders)],
+                'phone' => "123456789$i",
+                'address' => "Patient Address $i",
+                'profile_image' => 'patient.png'
             ]);
         }
     }
